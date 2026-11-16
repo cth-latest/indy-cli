@@ -24,6 +24,7 @@ Auth:
   login --cookie SID          use a __Http-sid cookie copied from your browser
   logout | whoami
   env: INDY_SESSION (sid cookie), INDY_ORG_ID, INDY_SESSION_FILE
+  upgrade [--check]           install the latest release (--check only reports it) | version
 
 Transactions (amounts in cents, VAT rates in basis points: 2000 = 20%):
   tx list [filters] [--page N | --all]
@@ -93,6 +94,11 @@ func run(cmd string, args []string) error {
 		return cmdLogin(args)
 	case "logout":
 		return cmdLogout(args)
+	case "upgrade":
+		return cmdUpgrade(args)
+	case "version":
+		fmt.Println(version)
+		return nil
 	}
 	s, err := loadSession()
 	if err != nil {
