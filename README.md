@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/logo-dark.svg">
+    <img src=".github/logo-light.svg" alt="Indy" width="160">
+  </picture>
+</p>
+
 # indy-cli
 
 Unofficial command-line client for [Indy](https://app.indy.fr), the French accounting app. It is built for scripts and AI agents: every command prints JSON, so an agent can list transactions, categorize them, set VAT, attach receipts and export accounting documents.
