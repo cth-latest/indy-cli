@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"strconv"
 	"slices"
+	"strconv"
 	"strings"
+	"time"
 
 	toon "github.com/toon-format/toon-go"
 )
@@ -23,7 +24,8 @@ Auth:
   login                       log in through a Chrome window, then press Enter here
   login --cookie SID          use a __Http-sid cookie copied from your browser
   logout | whoami
-  env: INDY_SESSION (sid cookie), INDY_ORG_ID, INDY_SESSION_FILE
+  env: INDY_SESSION (sid cookie), INDY_ORG_ID, INDY_SESSION_FILE,
+       INDY_NO_UPDATE_CHECK=1 (skip the check for a newer release, done at most every 15 min)
   upgrade [--check]           install the latest release (--check only reports it) | version
 
 Transactions (amounts in cents, VAT rates in basis points: 2000 = 20%):
@@ -78,7 +80,14 @@ func main() {
 		fmt.Print(usage)
 		return
 	}
-	if err := run(os.Args[1], os.Args[2:]); err != nil {
+	err := run(os.Args[1], os.Args[2:])
+	if os.Args[1] != "upgrade" {
+		// On stderr, so the JSON on stdout stays clean.
+		if n := updateNotice(func() (string, error) { return latestTag(2 * time.Second) }); n != "" {
+			fmt.Fprintln(os.Stderr, n)
+		}
+	}
+	if err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		var apiErr *APIError
 		if errors.As(err, &apiErr) && apiErr.Status == 401 && os.Args[1] != "login" {

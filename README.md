@@ -19,7 +19,15 @@ curl -fsSL https://raw.githubusercontent.com/cth-latest/indy-cli/main/install.sh
 
 This installs the latest release to `~/.local/bin` on macOS and Linux. Set `INDY_INSTALL_DIR` to install somewhere else.
 
-To update later, run `indy upgrade`. `indy upgrade --check` only tells you whether a newer release exists.
+### Update
+
+```sh
+indy upgrade            # download and install the latest release
+indy upgrade --check    # only tell you whether a newer release exists
+indy version
+```
+
+The CLI also tells you on stderr when a newer release exists. It asks GitHub at most once every 15 minutes; set `INDY_NO_UPDATE_CHECK=1` to turn that off.
 
 To build from source instead, you need Go:
 
