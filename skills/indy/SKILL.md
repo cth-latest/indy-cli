@@ -1,6 +1,6 @@
 ---
 name: indy
-description: Automate Indy (app.indy.fr) French accounting from the terminal with the unofficial `indy` CLI - list and filter bank transactions, categorize them, set VAT, upload and attach receipts, read VAT declarations and export accounting documents. Use when the user asks about their Indy accounting, bookkeeping, transactions, receipts ("justificatifs") or VAT ("TVA").
+description: Use the `indy` CLI for Indy (app.indy.fr) accounting - transactions, categories, VAT, receipts.
 ---
 
 # Indy CLI
