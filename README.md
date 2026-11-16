@@ -27,6 +27,16 @@ To build from source instead, you need Go:
 go install github.com/cth-latest/indy-cli@latest
 ```
 
+## Use it from an AI agent
+
+The repo ships a skill that teaches agents (Claude Code, Codex, Cursor and others) how to use the CLI:
+
+```sh
+npx skills add cth-latest/indy-cli
+```
+
+The agent can then install the CLI itself. You still run `indy login` once yourself, because the login needs a human.
+
 ## Log in
 
 ```sh
