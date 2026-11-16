@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"net/http"
 	"testing"
 )
 
@@ -43,5 +44,15 @@ func TestNewVat(t *testing.T) {
 	}
 	if _, err := newVat("bogus", 0); err == nil {
 		t.Fatal("unknown type should fail")
+	}
+}
+
+func TestAbsorb(t *testing.T) {
+	s := &Session{SID: "old", DeviceID: "dev"}
+	if s.absorb([]*http.Cookie{{Name: "other", Value: "x"}, {Name: "__Http-sid", Value: "old"}, {Name: "__Http-sid", Value: "", MaxAge: -1}}) || s.SID != "old" {
+		t.Fatal("unchanged or deleted cookie must not change the session")
+	}
+	if !s.absorb([]*http.Cookie{{Name: "__Http-sid", Value: "new"}}) || s.SID != "new" || s.DeviceID != "dev" {
+		t.Fatalf("rotated cookie not taken: %+v", s)
 	}
 }

@@ -65,6 +65,19 @@ func (s *Session) save() error {
 	return os.WriteFile(p, b, 0o600)
 }
 
+// absorb takes over session cookies set by a response and reports whether anything changed.
+func (s *Session) absorb(cookies []*http.Cookie) bool {
+	changed := false
+	for _, ck := range cookies {
+		dst := map[string]*string{"__Http-sid": &s.SID, "device_id": &s.DeviceID}[ck.Name]
+		// MaxAge < 0 is a deletion (sign-out), not a new value.
+		if dst != nil && ck.Value != "" && ck.MaxAge >= 0 && ck.Value != *dst {
+			*dst, changed = ck.Value, true
+		}
+	}
+	return changed
+}
+
 type Client struct {
 	s    *Session
 	http *http.Client
@@ -124,6 +137,10 @@ func (c *Client) do(method, path string, query url.Values, body any, ctype strin
 	resp, err := c.http.Do(req)
 	if err != nil {
 		return nil, err
+	}
+	// Indy may replace the session cookie on any response; keeping the old one would log the CLI out later.
+	if c.s != nil && c.s.absorb(resp.Cookies()) && os.Getenv("INDY_SESSION") == "" {
+		c.s.save()
 	}
 	if resp.StatusCode >= 400 {
 		b, _ := io.ReadAll(resp.Body)
