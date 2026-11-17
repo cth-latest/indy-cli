@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"flag"
 	"net/http"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -54,5 +56,16 @@ func TestAbsorb(t *testing.T) {
 	}
 	if !s.absorb([]*http.Cookie{{Name: "__Http-sid", Value: "new"}}) || s.SID != "new" || s.DeviceID != "dev" {
 		t.Fatalf("rotated cookie not taken: %+v", s)
+	}
+}
+
+func TestFileType(t *testing.T) {
+	dir := t.TempDir()
+	noExt := filepath.Join(dir, "scan")
+	os.WriteFile(noExt, []byte("%PDF-1.7\n"), 0o600)
+	for file, want := range map[string]string{"a.PDF": "application/pdf", "b.png": "image/png", noExt: "application/pdf"} {
+		if got := fileType(file); got != want {
+			t.Errorf("fileType(%q) = %q, want %q", file, got, want)
+		}
 	}
 }

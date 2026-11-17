@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime"
 	"mime/multipart"
 	"net/http"
+	"net/textproto"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -168,6 +170,15 @@ func (c *Client) JSON(method, path string, query url.Values, body any) (any, err
 	return v, nil
 }
 
+// fileType is the MIME type of a file, from its extension or else from its first bytes.
+func fileType(file string) string {
+	if t := mime.TypeByExtension(strings.ToLower(filepath.Ext(file))); t != "" {
+		return t
+	}
+	b, _ := os.ReadFile(file)
+	return http.DetectContentType(b)
+}
+
 func (c *Client) Upload(path string, query url.Values, file string) (any, error) {
 	f, err := os.Open(file)
 	if err != nil {
@@ -176,7 +187,11 @@ func (c *Client) Upload(path string, query url.Values, file string) (any, error)
 	defer f.Close()
 	var buf bytes.Buffer
 	mw := multipart.NewWriter(&buf)
-	part, err := mw.CreateFormFile("file", filepath.Base(file))
+	// Indy rejects files sent as application/octet-stream (the CreateFormFile default); the web app sends the real type.
+	part, err := mw.CreatePart(textproto.MIMEHeader{
+		"Content-Disposition": {mime.FormatMediaType("form-data", map[string]string{"name": "file", "filename": filepath.Base(file)})},
+		"Content-Type":        {fileType(file)},
+	})
 	if err != nil {
 		return nil, err
 	}
